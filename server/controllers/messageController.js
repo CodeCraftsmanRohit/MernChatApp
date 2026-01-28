@@ -1,8 +1,7 @@
-import User from "../models/User";
-import Message from "../models/Message";
-import cloudinary from "../lib/cloudinary";
-import { use } from "react";
-import { userSocketMap } from "../server";
+import User from "../models/User.js";
+import Message from "../models/Message.js";
+import cloudinary from "../lib/cloudinary.js";
+import { userSocketMap } from "../server.js";
 
 export const getUserForSidebar = async (req, res) => {
   try {

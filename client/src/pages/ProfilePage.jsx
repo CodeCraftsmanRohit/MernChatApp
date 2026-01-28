@@ -3,12 +3,15 @@ import { useNavigate } from 'react-router-dom'
 import assets from '../assets/assets'
 
 const ProfilePage = () => {
+
+  const {authUser,updateProfile}=React.useContext(AuthContext);
+
   const navigate = useNavigate()
 
   const [selectedImg, setSelectedImg] = useState(null)
   const [preview, setPreview] = useState(null)
-  const [name, setName] = useState("")
-  const [bio, setBio] = useState("")
+  const [name, setName] = useState(authUser?.name || "")
+  const [bio, setBio] = useState(authUser?.bio || "")
 
   // image preview + cleanup
   useEffect(() => {
@@ -26,8 +29,19 @@ const ProfilePage = () => {
   const handleSubmit = (e) => {
     e.preventDefault()
 
-    console.log({ name, bio, selectedImg })
-    navigate('/')
+    if(!selectedImg){
+      console.log({ name, bio, selectedImg })
+      navigate('/')
+
+    }
+    const reader=new FileReader();
+    reader.readAsDataURL(selectedImg);
+    reader.onload=async()=>{
+      const base64Image=reader.result;
+      await updateProfile({ name, bio, avatar:base64Image });
+      navigate('/');
+    }
+
   }
 
   return (

@@ -1,24 +1,26 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useContext } from 'react'
 import { useNavigate } from 'react-router-dom'
 import assets from '../assets/assets'
+import { AuthContext } from '../../context/AuthContext.jsx';
 
 const ProfilePage = () => {
-
-  const {authUser,updateProfile}=React.useContext(AuthContext);
-
-  const navigate = useNavigate()
+  const { authUser, updateProfile } = useContext(AuthContext);
+  const navigate = useNavigate();
 
   const [selectedImg, setSelectedImg] = useState(null)
-  const [preview, setPreview] = useState(null)
-  const [name, setName] = useState(authUser?.name || "")
+  const [preview, setPreview] = useState(authUser?.profilePic || null)
+  const [name, setName] = useState(authUser?.fullName || "")
   const [bio, setBio] = useState(authUser?.bio || "")
+
+  useEffect(() => {
+    if (!authUser) {
+      navigate('/login');
+    }
+  }, [authUser, navigate]);
 
   // image preview + cleanup
   useEffect(() => {
-    if (!selectedImg) {
-      setPreview(null)
-      return
-    }
+    if (!selectedImg) return;
 
     const objectUrl = URL.createObjectURL(selectedImg)
     setPreview(objectUrl)
@@ -26,28 +28,29 @@ const ProfilePage = () => {
     return () => URL.revokeObjectURL(objectUrl)
   }, [selectedImg])
 
-  const handleSubmit = (e) => {
-    e.preventDefault()
+  const handleSubmit = async (e) => {
+    e.preventDefault();
 
-    if(!selectedImg){
-      console.log({ name, bio, selectedImg })
-      navigate('/')
-
-    }
-    const reader=new FileReader();
-    reader.readAsDataURL(selectedImg);
-    reader.onload=async()=>{
-      const base64Image=reader.result;
-      await updateProfile({ name, bio, avatar:base64Image });
-      navigate('/');
+    let avatar = null;
+    if (selectedImg) {
+      const reader = new FileReader();
+      reader.readAsDataURL(selectedImg);
+      avatar = await new Promise((resolve) => {
+        reader.onloadend = () => resolve(reader.result);
+      });
     }
 
+    await updateProfile({
+      fullName: name,
+      bio,
+      avatar: avatar || authUser?.profilePic
+    });
+    navigate('/');
   }
 
   return (
     <div className='min-h-screen bg-cover bg-no-repeat flex items-center justify-center'>
       <div className='w-5/6 max-w-2xl backdrop-blur-2xl text-gray-300 border-2 border-gray-600 flex items-center justify-between max-sm:flex-col-reverse rounded-lg'>
-
         <form
           onSubmit={handleSubmit}
           className='flex flex-col gap-5 p-10 flex-1'
@@ -114,4 +117,4 @@ const ProfilePage = () => {
   )
 }
 
-export default ProfilePage
+export default ProfilePage;

@@ -1,5 +1,6 @@
-import React, { useState } from "react";
+import React, { useState, useContext } from "react";
 import assets from "../assets/assets.js";
+import { AuthContext } from "../../context/AuthContext.jsx";
 
 const LoginPage = () => {
   const [currState, setCurrState] = useState("Sign up");
@@ -8,27 +9,20 @@ const LoginPage = () => {
   const [password, setPassword] = useState("");
   const [bio, setBio] = useState("");
 
-  const { login } = React.useContext(AuthContext);
-
-  // 👉 derived state: checks if basic info is filled
-  const isBasicInfoFilled =
-    fullName.trim() !== "" && email.trim() !== "" && password.trim() !== "";
+  const { login } = useContext(AuthContext);
 
   const handleSubmit = (e) => {
     e.preventDefault();
 
-    login(currState === "Sign up" ? "signup" : "login", {
-      fullName,
-      email,
-      password,
-      bio,
-    });
+    const credentials = currState === "Sign up"
+      ? { fullName, email, password, bio }
+      : { email, password };
+
+    login(currState === "Sign up" ? "signup" : "login", credentials);
   };
 
   const toggleState = () => {
     setCurrState(currState === "Sign up" ? "Login" : "Sign up");
-
-    // clear inputs when switching
     setFullName("");
     setEmail("");
     setPassword("");
@@ -37,14 +31,8 @@ const LoginPage = () => {
 
   return (
     <div className="min-h-screen bg-cover bg-center flex items-center justify-center gap-8 sm:justify-evenly max-sm:flex-col backdrop-blur-2xl">
-      {/* Left */}
       <img src={assets.logo_big} alt="logo" className="w-[min(30vw,250px)]" />
-
-      {/* Right */}
-      <form
-        onSubmit={handleSubmit}
-        className="border-2 bg-white/10 text-white border-gray-500 p-6 flex flex-col gap-6 rounded-lg shadow-lg"
-      >
+      <form onSubmit={handleSubmit} className="border-2 bg-white/10 text-white border-gray-500 p-6 flex flex-col gap-6 rounded-lg shadow-lg">
         <h2 className="font-medium text-2xl flex justify-between items-center">
           {currState}
           <img
@@ -55,7 +43,6 @@ const LoginPage = () => {
           />
         </h2>
 
-        {/* Full Name */}
         {currState === "Sign up" && (
           <input
             value={fullName}
@@ -67,7 +54,6 @@ const LoginPage = () => {
           />
         )}
 
-        {/* Email */}
         <input
           value={email}
           type="email"
@@ -77,7 +63,6 @@ const LoginPage = () => {
           required
         />
 
-        {/* Password */}
         <input
           value={password}
           type="password"
@@ -87,8 +72,7 @@ const LoginPage = () => {
           required
         />
 
-        {/* Bio – appears only after name, email & password */}
-        {currState === "Sign up" && isBasicInfoFilled && (
+        {currState === "Sign up" && (
           <textarea
             value={bio}
             onChange={(e) => setBio(e.target.value)}
@@ -99,15 +83,13 @@ const LoginPage = () => {
           />
         )}
 
-        {/* Submit Button */}
         <button
           type="submit"
-          className="py-3 bg-gradient-to-r from-purple-400 to-violet-600 rounded-md cursor-pointer"
+          className="py-3 bg-gradient-to-r from-purple-400 to-violet-600 rounded-md cursor-pointer hover:opacity-90 transition-opacity"
         >
           {currState === "Sign up" ? "Create Account" : "Login"}
         </button>
 
-        {/* Terms */}
         {currState === "Sign up" && (
           <div className="flex items-center gap-2 text-sm text-gray-300">
             <input type="checkbox" required />
@@ -115,25 +97,18 @@ const LoginPage = () => {
           </div>
         )}
 
-        {/* Switch Auth Mode */}
         <div className="text-sm">
           {currState === "Sign up" ? (
             <p>
               Already have an account?{" "}
-              <span
-                className="text-purple-400 cursor-pointer"
-                onClick={toggleState}
-              >
+              <span className="text-purple-400 cursor-pointer" onClick={toggleState}>
                 Login
               </span>
             </p>
           ) : (
             <p>
-              Don’t have an account?{" "}
-              <span
-                className="text-purple-400 cursor-pointer"
-                onClick={toggleState}
-              >
+              Don't have an account?{" "}
+              <span className="text-purple-400 cursor-pointer" onClick={toggleState}>
                 Sign up
               </span>
             </p>
